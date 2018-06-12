@@ -9,8 +9,6 @@ import 'element-ui/lib/theme-chalk/index.css'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
-// Vue.prototype.GLOBAL = global_;
-// axios.defaults.baseURL = global_.BASE_URL;
 
 /* eslint-disable no-new */
 new Vue({

@@ -1,8 +1,8 @@
 <template>
   <el-container class="contain">
       <el-header class="header"> </el-header>
-      <el-aside>
-        <el-radio-group v-model="isCollapse" style="margin-bottom: 20px;">
+      <el-aside class="menuList">
+        <el-radio-group v-model="isCollapse" style="margin-left: -144px;margin-top: 30px;">
           <el-radio-button :label="false">展开</el-radio-button>
           <el-radio-button :label="true">收起</el-radio-button>
         </el-radio-group>
@@ -39,8 +39,8 @@
           </el-menu-item>
         </el-menu>
       </el-aside>
-      <el-main>
-        <div class="mapBox"></div>
+      <el-main class="box">
+        <div class="mapBox" id="allMap"></div>
         <div class="tableBox">
           <el-table :data="tableData" height="250" border style="width: 100%">
             <el-table-column prop="date" label="Base" width="180"> </el-table-column>
@@ -53,6 +53,7 @@
 </template>
 
 <script>
+  import {MP} from '../map.js'
     export default {
       data() {
         return {
@@ -62,6 +63,51 @@
         },
       created: function(){
           this.getTableData()
+      },
+      mounted () {
+        this.$nextTick(function() {
+          var _this = this;
+          MP(_this.ak).then(BMap => {
+            //在此调用api
+            var map = new BMap.Map("allMap");                         // 创建Map实例
+            map.centerAndZoom("上海",15);                               // 初始化地图,用城市名设置地图中心点
+            map.enableScrollWheelZoom(true);
+            function showInfo(e){
+              console.log(e.point.lng + ", " + e.point.lat);
+            }
+            map.addEventListener("click", showInfo);
+            //地图标注和窗口信息
+            var data_info = [
+              [121.477594, 31.239078,"地址：人民广场"],
+              [121.466095, 31.233644,"地址：南京西路"],
+              [121.465305, 31.246673,"地址：汉中路"],
+              [121.508855, 31.243586,"地址：陆家嘴"]
+            ];
+            var opts = {
+              width : 250,     // 信息窗口宽度
+              height: 80,     // 信息窗口高度
+              title : "信息窗口" , // 信息窗口标题
+              enableMessage:true//设置允许信息窗发送短息
+            };
+            for(var i=0;i<data_info.length;i++){
+              var marker = new BMap.Marker(new BMap.Point(data_info[i][0],data_info[i][1]));  // 创建标注
+              var content = data_info[i][2];
+              map.addOverlay(marker);               // 将标注添加到地图中
+              addClickHandler(content,marker);
+            }
+            function addClickHandler(content,marker){
+              marker.addEventListener("click",function(e){
+                openInfo(content,e)}
+              );
+            }
+            function openInfo(content,e){
+              var p = e.target;
+              var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+              var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象
+              map.openInfoWindow(infoWindow,point); //开启信息窗口
+            }
+          })
+        })
       },
       methods: {
         getTableData: function(){
@@ -108,6 +154,15 @@
   width: 100%;
   min-height: 40px;
   background: #65A7EB;
+  position: relative;
+}
+.box{
+}
+.menuList{
+  position: absolute;
+  left: 0;
+  top: 40px;
+  z-index: 999;
 }
   .mapBox{
     width: 100%;
